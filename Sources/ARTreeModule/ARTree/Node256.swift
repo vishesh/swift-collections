@@ -65,27 +65,26 @@ extension Node256: InternalNode {
     MemoryLayout<InternalNodeHeader>.stride + 256 * MemoryLayout<RawNode?>.stride
   }
 
+  var startIndex: Index { return index(after: -1) }
+  var endIndex: Index { return index(after: startIndex) }
+
   func index(forKey k: KeyPart) -> Index? {
     return childs[Int(k)] != nil ? Int(k) : nil
   }
 
-  func index() -> Index? {
-    return next(index: -1)
-  }
-
-  func next(index: Index) -> Index? {
-    for idx in index + 1..<256 {
+  func index(after idx: Index) -> Index {
+    for idx in idx + 1..<256 {
       if childs[idx] != nil {
         return idx
       }
     }
 
-    return nil
+    return 256
   }
 
-  func child(at: Index) -> RawNode? {
-    assert(at < 256, "maximum 256 childs allowed")
-    return childs[at]
+  func child(at index: Index) -> RawNode? {
+    assert(index < 256, "maximum 256 childs allowed")
+    return childs[index]
   }
 
   mutating func addChild(forKey k: KeyPart, node: RawNode) -> UpdateResult<RawNode?> {
@@ -96,6 +95,7 @@ extension Node256: InternalNode {
   }
 
   mutating func removeChild(at index: Index) -> UpdateResult<RawNode?> {
+    assert(index < 256, "invalid index")
     childs[index] = nil
     count -= 1
 
@@ -108,6 +108,7 @@ extension Node256: InternalNode {
   }
 
   mutating func withChildRef<R>(at index: Index, _ body: (RawNode.SlotRef) -> R) -> R {
+    assert(index < 256, "invalid index")
     let ref = childs.baseAddress! + index
     return body(ref)
   }
