@@ -11,11 +11,21 @@
 
 @available(macOS 13.3, iOS 16.4, watchOS 9.4, tvOS 16.4, *)
 extension ARTreeImpl {
-  var startIndex: Index  {
+  var startIndex: Index {
     var idx = Index(forTree: self)
     idx.descentToLeftMostChild()
     return idx
   }
 
   var endIndex: Index  { Index(forTree: self, endIndex: true) }
+
+  func index(after idx: Index) -> Index {
+    if idx == endIndex {
+      return idx
+    }
+
+    var newIdx = idx
+    newIdx.advanceToNext()
+    return newIdx
+  }
 }

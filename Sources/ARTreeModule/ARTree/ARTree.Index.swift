@@ -68,24 +68,28 @@ extension ARTreeImpl.Index {
     self.current = currentNode.child(at: index)?.toArtNode()
   }
 
-  mutating private func advanceToSibling() {
-    repeat {
-      let _ = path.popLast()
-    } while !advanceToNextChild()
-  }
+  mutating func advanceToNext() {
+    while !path.isEmpty {
+      let (node, index) = path.popLast()!
+      let next = node.index(after: index)
 
-  mutating private func advanceToNextChild() -> Bool {
-    guard let (node, index) = path.popLast() else {
-      return true
+      if next == node.endIndex {
+        continue
+      }
+
+      path.append((node, next))
+      guard let nextNode = node.child(at: next) else {
+        assert(false, "should have a child")
+      }
+
+      if nextNode.type == .leaf {
+        return
+      }
+
+      descentToLeftMostChild()
     }
 
-    let next = node.index(after: index)
-    if next == node.endIndex {
-      return false
-    }
-
-    path.append((node, node.index(after: index)))
-    return true
+    self.current = nil
   }
 }
 
